@@ -1,0 +1,4 @@
+API_KEY = ''
+BOT_API = ''
+CHANNEL_ID = ''
+MONGO_URL = ''
