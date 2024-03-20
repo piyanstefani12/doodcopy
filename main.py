@@ -3,7 +3,6 @@ import requests as req
 import time
 import os
 import config
-import json
 from bs4 import BeautifulSoup as bs
 
 
@@ -27,6 +26,8 @@ def upload():
     query_folder = folder.find({"result.fld_id": {"$gt": "1"}})
     query_link = link.find()
     print("Mengirim Video ke Akun Anda...")
+    time.sleep(5)
+    print("Silahkan Setting Folder Anda Menjadi Publik....")
     for i in query_folder:
         for y in query_link:
             req.get(f'https://doodapi.com/api/upload/url?key={config.API_KEY}&fld_id={i.get("result").get("fld_id")}&url={y.get("link")}')
@@ -46,7 +47,8 @@ def extract_link(linknya):
     page = req.get(linknya)
     soup = bs(page.content, 'html.parser')
     link = soup.find_all("a", {"class": "btn-default"})
-    print("Mencoba Membuat Link Baru di Akun Anda")
+    print("Mencoba Membuat Link Baru di Akun Anda....")
+    print("Proses Ini Memakan Waktu Beberapa Saat....")
     for i in link:
         if i['href'][0:5] == "https":
             collection.insert_one({'link' : i['href']})
@@ -61,7 +63,7 @@ def delete_data(folder_collection, link_collection):
     link.drop()
     folder.drop()
     os.system('cls')
-    print("Proses Sudah Selesai")
+    print("Proses Sudah Selesai, Data Sudah Berhasil Dihapus....")
     client.close()
 
 def kirim_telegram():
@@ -72,24 +74,35 @@ def kirim_telegram():
     # fld_id = folder.find({"result": {"fld_id": 1}})
     query_folder = folder.find({"result.fld_id": {"$gt": "1"}})
     query_nama = folder.find()
-    print("Mencoba Kirim Telegram")
+    print("Mencoba Kirim Telegram....")
     for i in query_nama:
         nama_folder = i.get("result").get("name")
         link_folder = i.get("result").get("code")
         req.post(f'https://api.telegram.org/bot{config.BOT_API}/sendMessage?chat_id={config.CHANNEL_ID}&text={nama_folder}\n\nhttps://d000d.com/f/{link_folder}')
-    print("Pesan Sudah Dikirim")
+    print("Pesan Sudah Dikirim, Silahkan Cek Tujuan Anda...")
+
+def main():
+    statement = input("Apakah Anda Ingin Memulai?Y/N: ")
+    while statement == "Y":
+        print("==============\nSelamat Datang\n==============")
+        folder = input("Masukkan Nama Folder : ")
+        create_folder(nama_folder=folder)
+        link = input("Masukkan Link Dood: ")
+        extract_link(linknya=link)
+        print("Tunggu Sebentar")
+        time.sleep(2)
+        upload()
+        kirim_telegram()
+        delete_data(folder_collection='create_folder', link_collection='link_sementara')
+        main()
+        os.system("cls")
+        if statement != "Y":
+            print("Sudah Yaa")
+            break
 
 
-# extract_link(input("Masukkan Link: "))
-# create_folder(nama_folder=input("Masukkan Nama Folder: "))
+
+
 
 if __name__ == '__main__':
-    create_folder(input("Masukkan Nama Folder: "))
-    time.sleep(2)
-    extract_link(input("Input Linknya: "))
-    time.sleep(2)
-    upload()
-    kirim_telegram()
-    delete_data(folder_collection='create_folder', link_collection='link_sementara')
-    print("Menutup dalam 5 detik")
-    time.sleep(5)
+    main()
