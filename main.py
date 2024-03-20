@@ -100,9 +100,5 @@ def main():
             print("Sudah Yaa")
             break
 
-
-
-
-
 if __name__ == '__main__':
     main()
